@@ -33,7 +33,7 @@ logger = get_logger(__file__)
 __all__ = [
     'as_file_descriptor', 'fs_verbose', 'set_fs_verbose',
     'open', 'open_txt', 'open_h5', 'open_gz',
-    'load', 'load_txt', 'load_h5', 'load_pkl', 'load_pklgz', 'load_npy', 'load_npz', 'load_mat', 'load_pth',
+    'load', 'load_txt', 'load_csv', 'load_h5', 'load_pkl', 'load_pklgz', 'load_npy', 'load_npz', 'load_mat', 'load_pth',
     'dump', 'dump_pkl', 'dump_pklgz', 'dump_npy', 'dump_npz', 'dump_mat', 'dump_pth',
     'safe_dump',
     'link', 'mkdir', 'lsdir', 'remove', 'locate_newest_file',
@@ -86,6 +86,11 @@ def load_txt(file, **kwargs):
         return f.readlines()
 
 
+def load_csv(file, **kwargs):
+    import pandas
+    return pandas.read_csv(file, **kwargs)
+
+
 def load_npy(file, **kwargs):
     return np.load(file, **kwargs)
 
@@ -117,8 +122,12 @@ def dump_npy(file, obj, **kwargs):
     return np.save(file, obj)
 
 
-def dump_npz(file, obj, **kwargs):
-    return np.savez(file, obj)
+# def dump_npz(file, obj, **kwargs):
+#     if obj is None:
+#         return np.savez(file, **kwargs)
+#     return np.savez(file, obj, **kwargs)
+def dump_npz(file, *args, **kwargs):
+    return np.savez(file, *args, **kwargs)
 
 
 def dump_mat(file, obj, **kwargs):
@@ -135,7 +144,8 @@ class _IOFunctionRegistryGroup(RegistryGroup):
 
     def dispatch(self, registry_name, file, *args, **kwargs):
         entry = get_ext(file)
-        callback = self.lookup(registry_name, entry, fallback=True, default=_default_io_fallback)
+        callback = self.lookup(registry_name, entry,
+                               fallback=True, default=_default_io_fallback)
         return callback(file, *args, **kwargs)
 
 
@@ -149,21 +159,23 @@ io_function_registry.register('open', '.h5', open_h5)
 io_function_registry.register('open', '.gz', open_gz)
 io_function_registry.register('open', '__fallback__', sys_open)
 
-io_function_registry.register('load', '.pkl',   load_pkl)
+io_function_registry.register('load', '.pkl', load_pkl)
 io_function_registry.register('load', '.pklgz', load_pklgz)
-io_function_registry.register('load', '.txt',   load_txt)
-io_function_registry.register('load', '.h5',    load_h5)
-io_function_registry.register('load', '.npy',   load_npy)
-io_function_registry.register('load', '.npz',   load_npz)
-io_function_registry.register('load', '.mat',   load_mat)
-io_function_registry.register('load', '.pth',   load_pth)
+io_function_registry.register('load', '.txt', load_txt)
+io_function_registry.register('load', '.h5', load_h5)
+io_function_registry.register('load', '.npy', load_npy)
+io_function_registry.register('load', '.npz', load_npz)
+io_function_registry.register('load', '.mat', load_mat)
+io_function_registry.register('load', '.pth', load_pth)
 
-io_function_registry.register('dump', '.pkl',   dump_pkl)
+io_function_registry.register('load', '.csv', load_csv)
+
+io_function_registry.register('dump', '.pkl', dump_pkl)
 io_function_registry.register('dump', '.pklgz', dump_pklgz)
-io_function_registry.register('dump', '.npy',   dump_npy)
-io_function_registry.register('dump', '.npz',   dump_npz)
-io_function_registry.register('dump', '.npz',   dump_mat)
-io_function_registry.register('dump', '.pth',   dump_pth)
+io_function_registry.register('dump', '.npy', dump_npy)
+io_function_registry.register('dump', '.npz', dump_npz)
+io_function_registry.register('dump', '.mat', dump_mat)
+io_function_registry.register('dump', '.pth', dump_pth)
 
 
 _fs_verbose = False
@@ -195,10 +207,14 @@ def load(file, **kwargs):
     return io_function_registry.dispatch('load', file, **kwargs)
 
 
-def dump(file, obj, **kwargs):
+# def dump(file, obj, **kwargs):
+#     if _fs_verbose and isinstance(file, six.string_types):
+#         logger.info('Dumping data to file: "{}".'.format(file))
+#     return io_function_registry.dispatch('dump', file, obj, **kwargs)
+def dump(file, *args, **kwargs):
     if _fs_verbose and isinstance(file, six.string_types):
         logger.info('Dumping data to file: "{}".'.format(file))
-    return io_function_registry.dispatch('dump', file, obj, **kwargs)
+    return io_function_registry.dispatch('dump', file, *args, **kwargs)
 
 
 def safe_dump(fname, data, use_lock=True, use_temp=True, lock_timeout=10):
@@ -229,7 +245,8 @@ def link(path_origin, *paths, use_relative_path=True):
         if os.path.exists(item):
             os.remove(item)
         if use_relative_path:
-            src_path = os.path.relpath(path_origin, start=os.path.dirname(item))
+            src_path = os.path.relpath(
+                path_origin, start=os.path.dirname(item))
         else:
             src_path = path_origin
         os.symlink(src_path, item)
@@ -286,4 +303,3 @@ def locate_newest_file(dirname, pattern):
     if len(fs) == 0:
         return None
     return max(fs, key=osp.getmtime)
-
