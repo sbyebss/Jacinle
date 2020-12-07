@@ -34,7 +34,7 @@ __all__ = [
     'as_file_descriptor', 'fs_verbose', 'set_fs_verbose',
     'open', 'open_txt', 'open_h5', 'open_gz',
     'load', 'load_txt', 'load_csv', 'load_h5', 'load_pkl', 'load_pklgz', 'load_npy', 'load_npz', 'load_mat', 'load_pth',
-    'dump', 'dump_pkl', 'dump_pklgz', 'dump_npy', 'dump_npz', 'dump_mat', 'dump_pth',
+    'dump', 'dump_pkl', 'dump_pklgz', 'dump_npy', 'dump_npz', 'dump_mat', 'dump_pth', 'dump_csv',
     'safe_dump',
     'link', 'mkdir', 'lsdir', 'remove', 'locate_newest_file',
     'io_function_registry'
@@ -130,6 +130,10 @@ def dump_npz(file, *args, **kwargs):
     return np.savez(file, *args, **kwargs)
 
 
+def dump_csv(file, obj, **kwargs):
+    return obj.to_csv(file)
+
+
 def dump_mat(file, obj, **kwargs):
     return sio.savemat(file, obj, **kwargs)
 
@@ -167,13 +171,13 @@ io_function_registry.register('load', '.npy', load_npy)
 io_function_registry.register('load', '.npz', load_npz)
 io_function_registry.register('load', '.mat', load_mat)
 io_function_registry.register('load', '.pth', load_pth)
-
 io_function_registry.register('load', '.csv', load_csv)
 
 io_function_registry.register('dump', '.pkl', dump_pkl)
 io_function_registry.register('dump', '.pklgz', dump_pklgz)
 io_function_registry.register('dump', '.npy', dump_npy)
 io_function_registry.register('dump', '.npz', dump_npz)
+io_function_registry.register('dump', '.csv', dump_csv)
 io_function_registry.register('dump', '.mat', dump_mat)
 io_function_registry.register('dump', '.pth', dump_pth)
 
