@@ -33,8 +33,8 @@ logger = get_logger(__file__)
 __all__ = [
     'as_file_descriptor', 'fs_verbose', 'set_fs_verbose',
     'open', 'open_txt', 'open_h5', 'open_gz',
-    'load', 'load_txt', 'load_csv', 'load_h5', 'load_pkl', 'load_pklgz', 'load_npy', 'load_npz', 'load_mat', 'load_pth',
-    'dump', 'dump_pkl', 'dump_pklgz', 'dump_npy', 'dump_npz', 'dump_mat', 'dump_pth', 'dump_csv',
+    'load', 'load_txt', 'load_csv', 'load_h5', 'load_pkl', 'load_pklgz', 'load_npy', 'load_npz', 'load_mat', 'load_pth', 'load_pt'
+    'dump', 'dump_pkl', 'dump_pklgz', 'dump_npy', 'dump_npz', 'dump_mat', 'dump_pth', 'dump_pt', 'dump_csv',
     'safe_dump',
     'link', 'mkdir', 'lsdir', 'remove', 'locate_newest_file',
     'io_function_registry'
@@ -108,6 +108,11 @@ def load_pth(file, **kwargs):
     return torch.load(file, **kwargs)
 
 
+def load_pt(file, **kwargs):
+    import torch
+    return torch.load(file, **kwargs)
+
+
 def dump_pkl(file, obj, **kwargs):
     with as_file_descriptor(file, 'wb') as f:
         return pickle.dump(obj, f, **kwargs)
@@ -119,7 +124,7 @@ def dump_pklgz(file, obj, **kwargs):
 
 
 def dump_npy(file, obj, **kwargs):
-    return np.save(file, obj)
+    return np.save(file, obj, **kwargs)
 
 
 # def dump_npz(file, obj, **kwargs):
@@ -131,7 +136,7 @@ def dump_npz(file, *args, **kwargs):
 
 
 def dump_csv(file, obj, **kwargs):
-    return obj.to_csv(file)
+    return obj.to_csv(file, **kwargs)
 
 
 def dump_mat(file, obj, **kwargs):
@@ -140,7 +145,12 @@ def dump_mat(file, obj, **kwargs):
 
 def dump_pth(file, obj, **kwargs):
     import torch
-    return torch.save(obj, file)
+    return torch.save(obj, file, **kwargs)
+
+
+def dump_pt(file, obj, **kwargs):
+    import torch
+    return torch.save(obj, file, **kwargs)
 
 
 class _IOFunctionRegistryGroup(RegistryGroup):
@@ -171,6 +181,7 @@ io_function_registry.register('load', '.npy', load_npy)
 io_function_registry.register('load', '.npz', load_npz)
 io_function_registry.register('load', '.mat', load_mat)
 io_function_registry.register('load', '.pth', load_pth)
+io_function_registry.register('load', '.pt', load_pt)
 io_function_registry.register('load', '.csv', load_csv)
 
 io_function_registry.register('dump', '.pkl', dump_pkl)
@@ -180,6 +191,7 @@ io_function_registry.register('dump', '.npz', dump_npz)
 io_function_registry.register('dump', '.csv', dump_csv)
 io_function_registry.register('dump', '.mat', dump_mat)
 io_function_registry.register('dump', '.pth', dump_pth)
+io_function_registry.register('dump', '.pt', dump_pt)
 
 
 _fs_verbose = False
