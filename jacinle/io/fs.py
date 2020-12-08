@@ -33,7 +33,7 @@ logger = get_logger(__file__)
 __all__ = [
     'as_file_descriptor', 'fs_verbose', 'set_fs_verbose',
     'open', 'open_txt', 'open_h5', 'open_gz',
-    'load', 'load_txt', 'load_csv', 'load_h5', 'load_pkl', 'load_pklgz', 'load_npy', 'load_npz', 'load_mat', 'load_pth', 'load_pt'
+    'load', 'load_txt', 'load_csv', 'load_h5', 'load_pkl', 'load_pklgz', 'load_npy', 'load_npz', 'load_mat', 'load_pth', 'load_pt',
     'dump', 'dump_pkl', 'dump_pklgz', 'dump_npy', 'dump_npz', 'dump_mat', 'dump_pth', 'dump_pt', 'dump_csv',
     'safe_dump',
     'link', 'mkdir', 'lsdir', 'remove', 'locate_newest_file',
