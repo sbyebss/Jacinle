@@ -82,8 +82,9 @@ def load_h5(file, **kwargs):
 
 
 def load_txt(file, **kwargs):
-    with sys_open(file, 'r', **kwargs) as f:
-        return f.readlines()
+    return np.loadtxt(file, **kwargs)
+    # with sys_open(file, 'r', **kwargs) as f:
+    #     return f.readlines()
 
 
 def load_csv(file, **kwargs):
